@@ -2,8 +2,14 @@
 
 Migrate data from sqlite3 to postgreSQL with xorm
 
+### Install
 
-#### Methods
+```
+go get -u https://github.com/udtrokia/ms2p
+
+```
+
+### Methods
 
 
 
@@ -41,12 +47,12 @@ type Write func(blocks []Block, txs []Tx)
 #### Usage
 
 ```Golang
+import "ms2p"
 
 func main() {
     Generate();
     Write(Read());
 }
-
 
 ```
 
