@@ -1,4 +1,4 @@
-package main;
+package ms2p;
 
 import (
 	"fmt"
@@ -54,12 +54,13 @@ type engineFunc func() (*xorm.Engine, error)
 // assert-tool
 func assert(err error) {
 	if err != nil {
-		fmt.Printf("{}",err);
+		fmt.Println("\n")
+		panic(err);
 	}
 }
 
 // Generate database
-func generate() {
+func Generate() {
 	engines := []engineFunc{ sqliteEngine, postgresEngine };
 	for _, enginefunc := range engines {
 		Orm, err := enginefunc();
@@ -67,14 +68,15 @@ func generate() {
 		
 		fmt.Println("--------", Orm.DriverName(), "----------")
 		
-		Orm.ShowSQL(true)
+		// Orm.ShowSQL(true)
 		err = sync(Orm)
+		assert(err);
 	}
 }
 
 
 // Read from sqlite3
-func read() {
+func Read() ([]Block, []Tx) {
 	
 	var blocks []Block;
 	var txs []Tx;
@@ -88,12 +90,39 @@ func read() {
 	err = engine.Find(&txs);
 	assert(err);
 
-	fmt.Println("\n---Blocks---: {}\n", blocks);
-	fmt.Println("\n---Txs---: {}\n", txs);
+	return blocks, txs
 }
 
 
-func main() {
-	generate();
-	read();
+// Write into postgres
+func Write(blocks []Block, txs []Tx) {
+	
+ 	Orm, err := postgresEngine()
+	fmt.Printf("-------", Orm.DriverName(), "-------");
+	assert(err);
+
+	err = sync(Orm)
+	assert(err);
+
+	for _, block := range blocks {
+		_, err = Orm.Insert(block);
+		assert(err);
+	}
+
+	for tx := range txs {
+	 	_, err = Orm.Insert(tx);
+	 	assert(err);
+	}
+
+	print("\n\nSucceed!\n\n");
 }
+
+
+// func main() {
+// 	Generate();
+// 
+// 	// blocks, txs := read();
+// 	Write(Read())
+// 	//fmt.Println("\n---Blocks---:\n", blocks);
+// 	//fmt.Println("\n---Txs---: \n", txs);	
+// }

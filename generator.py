@@ -1,6 +1,6 @@
 from peewee import *;
 
-db = SqliteDatabase('sync.db');
+db = SqliteDatabase('the.db');
 
 class Block(Model):
     height = IntegerField();
