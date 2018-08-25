@@ -1,4 +1,4 @@
-package main;
+package ms2p;
 
 import (
 	"fmt"
@@ -9,35 +9,16 @@ import (
 )
 
 
-// Struct
-type Block struct {
-	Difficulty int64
-	Gas_limit int64
-	Gas_used int64
-	Hash string   `xorm:"unique"`
-	Number int64  `xorm:"unique"`
-	Size int64
-	Timestamp int64
-	Total_difficulty int64
-	Txs_n int64
-	Finished int64
-}
-
-type Tx struct {
-	Id int64
-	// Block_hash string
-	Gas int64
-	Gas_price int64
-	// Hash string
-	Input string
-	Value float64
-	Finished int64
-}
-
-
 // preMethods
-func sync(engine *xorm.Engine) error {
-	return engine.Sync2(&Block{}, &Tx{});
+func sync(engine *xorm.Engine, args ...interface{}) error {
+
+	var arr []interface{}
+	
+	for _, arg := range args {
+		arr = append(arr, arg)
+	}
+		
+	return engine.Sync2(args);
 }
 
 
@@ -62,7 +43,6 @@ type engineFunc func() (*xorm.Engine, error)
 // assert-tool
 func assert(err error) {
 	if err != nil {
-		fmt.Println("\n")
 		panic(err);
 	}
 }
@@ -84,53 +64,37 @@ func Generate() {
 
 
 // Read from sqlite3
-func Read() ([]Block, []Tx) {
-	
-	var blocks []Block;
-	var txs []Tx;
+func Read(args ...interface {}) ([]interface {}){
 
 	engine, err := sqliteEngine();
 	assert(err);
-	
-	err = engine.Find(&blocks);
-	assert(err);
 
-	err = engine.Find(&txs);
-	assert(err);
+	for _, arg := range args {
+		err = engine.Find(&arg);
+		assert(err);		
+	}
 
-	return blocks, txs
+	return args
 }
 
 
 // Write into postgres
-func Write(blocks []Block, txs []Tx) {
+func Write(args ...[]interface{}) {
 	
  	Orm, err := postgresEngine()
-	fmt.Printf("-------", Orm.DriverName(), "-------");
+	fmt.Println("-------", Orm.DriverName(), "-------");
 	assert(err);
 
 	err = sync(Orm)
 	assert(err);
 
-	for _, block := range blocks {
-		_, err = Orm.Insert(block);
-		assert(err);
+	for _, arg := range args {
+		for _, data := range arg {
+			_, err = Orm.Insert(data);
+			assert(err);
+		}		
 	}
-
-	for tx := range txs {
-	 	_, err = Orm.Insert(tx);
-	 	assert(err);
-	}
-
+	
 	print("\n\nSucceed!\n\n");
 }
 
-
-func main() {
- 	Generate();
-	
- 	// blocks, txs := read();
- 	Write(Read())
- 	//fmt.Println("\n---Blocks---:\n", blocks);
- 	//fmt.Println("\n---Txs---: \n", txs);	
-}

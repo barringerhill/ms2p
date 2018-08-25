@@ -17,6 +17,7 @@ class Block(Model):
     class Meta:
         database = db;
 
+        
 db.connect();
 db.create_tables([Block]);
 
