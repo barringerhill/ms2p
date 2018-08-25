@@ -1,4 +1,4 @@
-package ms2p;
+package main;
 
 import (
 	"fmt"
@@ -11,19 +11,27 @@ import (
 
 // Struct
 type Block struct {
-	Id int64
-	Height int64  `xorm:"unique"`
-	Time string   `xorm:"unique"`
+	Difficulty int64
+	Gas_limit int64
+	Gas_used int64
+	Hash string   `xorm:"unique"`
+	Number int64  `xorm:"unique"`
+	Size int64
+	Timestamp int64
+	Total_difficulty int64
 	Txs_n int64
-	Inner_txs_n int64
-	Txs string
+	Finished int64
 }
 
 type Tx struct {
 	Id int64
-	Tx_id string   `xorm: "unique"`
-	Height int64   `xorm: "unique"`
-	Content string 
+	// Block_hash string
+	Gas int64
+	Gas_price int64
+	// Hash string
+	Input string
+	Value float64
+	Finished int64
 }
 
 
@@ -35,7 +43,7 @@ func sync(engine *xorm.Engine) error {
 
 /// sqliteEngine
 func sqliteEngine() (*xorm.Engine, error) {
-	f := "the.db"
+	f := "the.fox"
 	// os.Remove("the.db")
 
 	return xorm.NewEngine("sqlite3", f);
@@ -68,7 +76,7 @@ func Generate() {
 		
 		fmt.Println("--------", Orm.DriverName(), "----------")
 		
-		// Orm.ShowSQL(true)
+		Orm.ShowSQL(true)
 		err = sync(Orm)
 		assert(err);
 	}
@@ -118,11 +126,11 @@ func Write(blocks []Block, txs []Tx) {
 }
 
 
-// func main() {
-// 	Generate();
-// 
-// 	// blocks, txs := read();
-// 	Write(Read())
-// 	//fmt.Println("\n---Blocks---:\n", blocks);
-// 	//fmt.Println("\n---Txs---: \n", txs);	
-// }
+func main() {
+ 	Generate();
+	
+ 	// blocks, txs := read();
+ 	Write(Read())
+ 	//fmt.Println("\n---Blocks---:\n", blocks);
+ 	//fmt.Println("\n---Txs---: \n", txs);	
+}
