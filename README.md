@@ -56,6 +56,10 @@ func main() {
 
 ```
 
+#### TODO
+
++ [ ] Struct Separate
+
 
 #### LICENSE
 
