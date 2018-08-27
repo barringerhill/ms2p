@@ -1,11 +1,19 @@
-// Struct
-
-package main
-
+package main;
 import "github.com/udtrokia/ms2p"
 
-func main() {
+type Tx struct {
+	Block_number int
+	Hash string
+	Input string
+}
 
-	ms2p.Generate();
-	ms2p.Write(ms2p.Read())
+func (Tx) TableName() string {return "tx"}
+
+func main() {
+	config := ms2p.Config{
+		DBPath: "the.fox",
+		PgPara: "host=127.0.0.1 port=5432 dbname=edata sslmode=disable",
+	}
+	
+	ms2p.Convert(config, &Tx{});
 }

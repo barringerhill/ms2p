@@ -9,52 +9,49 @@ go get -u https://github.com/udtrokia/ms2p
 
 ```
 
-### Methods
+#### Content
 
-
-
-+ Generate -- Generate database structs
++ Struct
 
 ```go
+type Config struct {
+    DBPath string
+    PgPara string
+}
 
-type Generate func() 
-// output `the.db`
-
-```
-  
-
-
-+ Read -- Read data from sqlite3
-
-```go
-
-type Read func() ([]Block, []Tx)
-// import `the.db`
+func Convert (config Config, args ...interface) {}
 
 ```
 
-
-
-+ Write -- Write data into PostgreSQL
-
-```go
-
-type Write func(blocks []Block, txs []Tx) 
-
-```
-
-
-#### Usage
+#### Example
 
 ```Golang
-import "ms2p"
+
+package main;
+import "github.com/udtrokia/ms2p"
+
+type Tx struct {
+	Block_number int
+	Hash string
+	Input string
+}
+
+func (Tx) TableName() string {return "tx"}
 
 func main() {
-    Generate();
-    Write(Read());
+	config := ms2p.Config{
+		DBPath: "the.fox",
+		PgPara: "host=127.0.0.1 port=5432 dbname=edata sslmode=disable",
+	}
+	
+	ms2p.Convert(config, &Tx{});
 }
 
 ```
+
+#### TODO
+
+More intro.
 
 
 #### LICENSE

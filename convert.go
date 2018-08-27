@@ -2,120 +2,45 @@ package ms2p;
 
 import (
 	"fmt"
+	"reflect"
 	
-	"github.com/go-xorm/xorm"	
-	_ "github.com/mattn/go-sqlite3"
-	_ "github.com/lib/pq"	
+	"github.com/jinzhu/gorm"
+	_ "github.com/jinzhu/gorm/dialects/postgres"
+	_ "github.com/jinzhu/gorm/dialects/sqlite"
 )
 
-// struct
-
-type Block struct {
-        Difficulty int64
-        Gas_limit int64
-        Gas_used int64
-        Hash string   `xorm:"unique"`
-        Number int64  `xorm:"unique"`
-        Size int64
-        Timestamp int64
-        Total_difficulty int64
-        Txs_n int64
-        Finished int64
+type Config struct {
+	DBPath  string
+	PgPara  string
 }
 
-type Tx struct {
-        Id int64
-        Block_hash string
-        Gas int64
-        Gas_price int64
-        Hash string
-        Input string
-        Value float64
-        Finished int64
-}
-
-// preMethods
-func sync(engine *xorm.Engine ) error {
-	return engine.Sync2(&Block{}, &Tx{});
-}
-
-
-/// sqliteEngine
-func sqliteEngine() (*xorm.Engine, error) {
-	f := "the.fox"
-	// os.Remove("the.fox")
-
-	return xorm.NewEngine("sqlite3", f);
-}
-
-
-/// postgresEngine
-func postgresEngine() (*xorm.Engine, error) {
-	return xorm.NewEngine("postgres", "dbname=xorm_test sslmode=disable");
-}
-
-/// engineFunc
-type engineFunc func() (*xorm.Engine, error)
-
-
-// assert-tool
 func assert(err error) {
-	if err != nil {
-		panic(err);
-	}
+	if err != nil { panic(err); }
 }
 
-// Generate database
-func Generate(args ...interface{}) {
-	engines := []engineFunc{ sqliteEngine, postgresEngine };
-	for _, enginefunc := range engines {
-		Orm, err := enginefunc();
-		assert(err);
+func Convert(config Config, args ...interface{}) {
+
+	// sqlite
+	sqlite, sqlite_err := gorm.Open("sqlite3", config.DBPath);
+
+	assert(sqlite_err);
+	defer sqlite.Close();
+	
+	// progres
+	postgres, postgre_err := gorm.Open("postgres", config.PgPara);
+
+	assert(postgre_err);
+	defer postgres.Close();
+	
+	for _, arg := range(args) {
+		sqlite.Find(arg);
 		
-		fmt.Println("--------", Orm.DriverName(), "----------")
+		postgres.AutoMigrate(arg)
+		postgres.Create(arg);
+
+		arg_obj := reflect.ValueOf(arg).Elem();
+		fmt.Println(arg_obj);
 		
-		// Orm.ShowSQL(true)
-		err = sync(Orm)
-		assert(err);
+		println("Succeed!")
 	}
 }
-
-
-// Read from sqlite3
-func Read() ([]interface{}){
-
-	engine, err := sqliteEngine();
-	assert(err);
-
-	var retarr []interface{}
-	
-	target := make([]Block, 0);
-	err = engine.Find(&target);
-	assert(err);
-
-	retarr = append(retarr, target);
-	
-	return retarr;
-}
-
-
-// Write into postgres
-func Write(args ...[]interface{}) {
-	
- 	Orm, err := postgresEngine()
-	fmt.Println("-------", Orm.DriverName(), "-------");
-	assert(err);
-
-	err = sync(Orm)
-	assert(err);
-
-	for _, arg := range args {
-		for _, data := range arg {
-			_, err = Orm.Insert(data);
-			assert(err);
-		}		
-	}
-	
-	print("\n\nSucceed!\n\n");
-}
-
