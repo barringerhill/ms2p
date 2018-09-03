@@ -2,6 +2,17 @@
 
 Migrate data from sqlite3 to postgreSQL with xorm
 
+
+### ASSERT
+
+JUST FOR ALLBLUE
+
+***
+
+BUILD FAILED
+
+***
+
 ### Install
 
 ```
